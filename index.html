@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Bet Challenge</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #000;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            text-align: center;
+            position: relative;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .balance {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .timer {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .timer span {
+            color: #ffcc00;
+            font-size: 1.2em;
+        }
+        .color-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .color-btn {
+            flex: 1;
+            padding: 15px;
+            margin: 0 5px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: 2px solid transparent; /* Default border */
+        }
+        .color-btn.selected {
+            border: 4px solid #fff; /* Highlight selected color with a thicker white border */
+        }
+        .red { background-color: #ff4d4d; }
+        .green { background-color: #4dff4d; }
+        .violet { background-color: #cc4dff; }
+        .color-btn span {
+            display: block;
+            font-size: 0.8em;
+        }
+        .bet-amount {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .bet-amount input {
+            width: 60px;
+            padding: 5px;
+            margin: 0 5px;
+            background-color: #555;
+            border: none;
+            color: #fff;
+            text-align: center;
+        }
+        .bet-amount button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            background-color: #555;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+        }
+        .confirm-bet {
+            background-color: #1e90ff;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .result-popup {
+            background-color: #4dff4d;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none; /* Hidden by default */
+        }
+        .result-history {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .history-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #444;
+        }
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .won { color: #4dff4d; }
+        .lost { color: #ff4d4d; }
+        .current-bet {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+        .nav button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .nav button i {
+            font-style: normal; /* Using text as icons */
+        }
+        .nav button.active {
+            color: #1e90ff;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container" id="gamePage">
+        <div class="header">
+            <span>←</span>
+            <h2>Color Bet Challenge</h2>
+            <span>🌐</span>
+        </div>
+        <div class="balance">BALANCE<br><span id="balance">200.0</span> Rs</div>
+        <div class="timer">NEXT RESULT IN<br><span id="timer">0:30</span></div>
+        <div class="color-buttons">
+            <div class="color-btn red" onclick="selectColor('red')">RED<br><span>1.92x</span></div>
+            <div class="color-btn violet" onclick="selectColor('violet')">VIOLET<br><span>9x</span></div>
+            <div class="color-btn green" onclick="selectColor('green')">GREEN<br><span>1.92x</span></div>
+        </div>
+        <div class="bet-amount">
+            BET AMOUNT<br>
+            <input type="text" id="betAmount" value="10" readonly>
+            <button onclick="updateBet(20)">20</button>
+            <button onclick="updateBet(50)">50</button>
+            <button onclick="updateBet(100)">100</button>
+        </div>
+        <div class="confirm-bet" onclick="confirmBet()">CONFIRM BET</div>
+        <div class="result-popup" id="resultPopup"></div>
+        <div class="result-history">RESULT HISTORY<br><span id="resultHistory"></span></div>
+        <div class="nav">
+            <button onclick="showPage('gamePage')" id="homeBtn"><i>🏠</i><br>Home</button>
+            <button onclick="showPage('historyPage')" id="historyBtn"><i>📜</i><br>History</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="historyPage">
+        <div class="header">
+            <span onclick="showPage('gamePage')">←</span>
+            <h2>Color Bet Challenge</h2>
+            <span>🌐</span>
+        </div>
+        <div class="result-history">
+            <h3>Betting History</h3>
+            <div class="history-list" id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        let balance = 200.0;
+        let betColor = '';
+        let betAmount = 10;
+        let history = [];
+        let roundCount = 0;
+        let timerInterval;
+
+        function updateBet(amount) {
+            betAmount = amount;
+            document.getElementById('betAmount').value = amount;
+        }
+
+        function selectColor(color) {
+            betColor = color;
+            // Remove selected class from all color buttons
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+            // Add selected class to the clicked button
+            document.querySelector(`.color-btn.${color}`).classList.add('selected');
+            document.getElementById('currentBet').textContent = `CURRENT BET\n${betAmount} points on ${color}`;
+        }
+
+        function startTimer() {
+            let time = 30;
+            const timerElement = document.getElementById('timer');
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                time--;
+                timerElement.textContent = `0:${time < 10 ? '0' + time : time}`;
+                if (time <= 0) {
+                    clearInterval(timerInterval);
+                    generateResult();
+                }
+            }, 1000);
+        }
+
+        function confirmBet() {
+            if (!betColor || betAmount > balance) {
+                document.getElementById('resultPopup').style.display = 'block';
+                document.getElementById('resultPopup').textContent = betColor ? 'Insufficient balance!' : 'Please select a color!';
+                setTimeout(() => document.getElementById('resultPopup').style.display = 'none', 2000);
+                return;
+            }
+            document.getElementById('resultPopup').style.display = 'block';
+            document.getElementById('resultPopup').textContent = 'Bet placed!';
+            setTimeout(() => document.getElementById('resultPopup').style.display = 'none', 2000);
+            balance -= betAmount;
+            document.getElementById('balance').textContent = balance.toFixed(1);
+            startTimer();
+        }
+
+        function generateResult() {
+            roundCount++;
+            const colors = ['red', 'green'];
+            let result = colors[Math.floor(Math.random() * colors.length)];
+            if (roundCount % 10 === 0) {
+                result = 'violet'; // Violet appears 1 in 10 rounds
+            }
+            let outcomeMessage = '';
+            let winnings = 0;
+
+            if (betColor === result) {
+                if (result === 'violet') {
+                    winnings = betAmount * 9;
+                    outcomeMessage = `Congratulations!\nYou have won ${winnings} Rs!`;
+                    balance += winnings;
+                } else {
+                    winnings = betAmount * 1.92;
+                    outcomeMessage = `Congratulations!\nYou have won ${winnings.toFixed(1)} Rs!`;
+                    balance += winnings;
+                }
+            } else {
+                outcomeMessage = `Sorry!\nYou have lost ${betAmount} Rs!`;
+            }
+
+            document.getElementById('resultPopup').style.display = 'block';
+            document.getElementById('resultPopup').textContent = outcomeMessage;
+            setTimeout(() => document.getElementById('resultPopup').style.display = 'none', 3000);
+            document.getElementById('balance').textContent = balance.toFixed(1);
+
+            // Update result history
+            let historyColor = '';
+            if (result === 'red') historyColor += '🔴';
+            if (result === 'green') historyColor += '🟢';
+            if (result === 'violet') historyColor += '🟣';
+            document.getElementById('resultHistory').textContent = historyColor;
+
+            // Update betting history
+            history.unshift({
+                time: new Date().toLocaleTime('en-US', { hour12: false }),
+                bet: `${betAmount} points on ${betColor}`,
+                result: result,
+                outcome: outcomeMessage.includes('Congratulations') ? `Won ${winnings.toFixed(1)} Rs` : `Lost ${betAmount} Rs`
+            });
+
+            updateHistory();
+            betColor = ''; // Reset bet color
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('currentBet').textContent = '';
+            startTimer();
+        }
+
+        function updateHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = ''; // Clear current history
+            history.forAll(entry => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `<span>${entry.time}</span><br>${entry.bet}<br>Result: ${entry.result}<br><span class="${entry.outcome.includes('Won') ? 'won' : 'lost'}">${entry.outcome}</span>`;
+                historyList.appendChild(item);
+            });
+        }
+
+        function showPage(pageId) {
+            document.getElementById('gamePage').classList.add('hidden');
+            document.getElementById('historyPage').classList.add('hidden');
+            document.getElementById(pageId).classList.remove('hidden');
+            document.getElementById(pageId === 'gamePage' ? 'homeBtn' : 'historyBtn').classList.add('active');
+            document.getElementById(pageId === 'gamePage' ? 'historyBtn' : 'homeBtn').classList.remove('active');
+        }
+
+        // Start the game
+        showPage('gamePage');
+        startTimer();
+    </script>
+</body>
+</html>
