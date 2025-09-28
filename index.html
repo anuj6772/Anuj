@@ -184,6 +184,9 @@
             <button onclick="showPage('historyPage')" id="historyBtn"><i>📜</i><br>History</button>
         </div>
     </div>
+    <div class="copyright">
+            <p style="background-color: #000; color: #fff; margin: 10px 0 0 0; font-size: 0.8em;">© 2025 Color Bet Challenge. All rights reserved.</p>
+            </div>
 
     <div class="container hidden" id="historyPage">
         <div class="header">
@@ -322,14 +325,5 @@
         showPage('gamePage');
         startTimer();
     </script>
-    <footer style="text-align:center; padding: 15px; background:#f5f5f5; color:#333; font-family: Arial, sans-serif; font-size:14px;">
-          © <span id="year"></span> All rights reserved <br>
-            - Created by Anuj
-            </footer>
-
-            <script>
-              // Auto update year
-                document.getElementById("year").textContent = new Date().getFullYear();
-                </script>
 </body>
 </html>
