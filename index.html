@@ -179,6 +179,7 @@
         <div class="confirm-bet" onclick="confirmBet()">CONFIRM BET</div>
         <div class="result-popup" id="resultPopup"></div>
         <div class="result-history">RESULT HISTORY<br><span id="resultHistory"></span></div>
+            <div class="current-bet" id="currentBet"></div>
         <div class="nav">
             <button onclick="showPage('gamePage')" id="homeBtn"><i>🏠</i><br>Home</button>
             <button onclick="showPage('historyPage')" id="historyBtn"><i>📜</i><br>History</button>
@@ -252,60 +253,70 @@
         }
 
         function generateResult() {
-            roundCount++;
-            const colors = ['red', 'green'];
-            let result = colors[Math.floor(Math.random() * colors.length)];
-            if (roundCount % 10 === 0) {
-                result = 'violet'; // Violet appears 1 in 10 rounds
-            }
-            let outcomeMessage = '';
-            let winnings = 0;
+                roundCount++;
+                // Call your Python backend API
+                fetch("https://anuj-production.up.railway.app/")
+                    .then(res => res.json())
+                    .then(data => {
+                        let result = data.result; // backend returns "red", "green" or "violet"
+                        let outcomeMessage = '';
+                        let winnings = 0;
 
-            if (betColor === result) {
-                if (result === 'violet') {
-                    winnings = betAmount * 9;
-                    outcomeMessage = `Congratulations!\nYou have won ${winnings} Rs!`;
-                    balance += winnings;
-                } else {
-                    winnings = betAmount * 1.92;
-                    outcomeMessage = `Congratulations!\nYou have won ${winnings.toFixed(1)} Rs!`;
-                    balance += winnings;
-                }
-            } else {
-                outcomeMessage = `Sorry!\nYou have lost ${betAmount} Rs!`;
-            }
+                        if (betColor === result) {
+                            if (result === 'violet') {
+                                winnings = betAmount * 9;
+                                outcomeMessage = `Congratulations!\nYou have won ${winnings} Rs!`;
+                                balance += winnings;
+                            } else {
+                                winnings = betAmount * 1.92;
+                                outcomeMessage = `Congratulations!\nYou have won ${winnings.toFixed(1)} Rs!`;
+                                balance += winnings;
+                            }
+                        } else {
+                            outcomeMessage = `Sorry!\nYou have lost ${betAmount} Rs!`;
+                        }
 
-            document.getElementById('resultPopup').style.display = 'block';
-            document.getElementById('resultPopup').textContent = outcomeMessage;
-            setTimeout(() => document.getElementById('resultPopup').style.display = 'none', 3000);
-            document.getElementById('balance').textContent = balance.toFixed(1);
+                        document.getElementById('resultPopup').style.display = 'block';
+                        document.getElementById('resultPopup').textContent = outcomeMessage;
+                        setTimeout(() => document.getElementById('resultPopup').style.display = 'none', 3000);
+                        document.getElementById('balance').textContent = balance.toFixed(1);
 
-            // Update result history
-            let historyColor = '';
-            if (result === 'red') historyColor += '🔴';
-            if (result === 'green') historyColor += '🟢';
-            if (result === 'violet') historyColor += '🟣';
-            document.getElementById('resultHistory').textContent = historyColor;
+                        // Update result history
+                        let historyColor = '';
+                        if (result === 'red') historyColor += '🔴';
+                        if (result === 'green') historyColor += '🟢';
+                        if (result === 'violet') historyColor += '🟣';
+                        document.getElementById('resultHistory').textContent = historyColor;
 
-            // Update betting history
-            history.unshift({
-                time: new Date().toLocaleTime('en-US', { hour12: false }),
-                bet: `${betAmount} points on ${betColor}`,
-                result: result,
-                outcome: outcomeMessage.includes('Congratulations') ? `Won ${winnings.toFixed(1)} Rs` : `Lost ${betAmount} Rs`
-            });
+                        // Update betting history
+                        history.unshift({
+                            time: new Date().toLocaleTimeString('en-US', { hour12: false }),
+                            bet: `${betAmount} points on ${betColor}`,
+                            result: result,
+                            outcome: outcomeMessage.includes('Congratulations') ? `Won ${winnings.toFixed(1)} Rs` : `Lost ${betAmount} Rs`
+                        });
 
-            updateHistory();
-            betColor = ''; // Reset bet color
-            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
-            document.getElementById('currentBet').textContent = '';
-            startTimer();
+                        updateHistory();
+
+                        // Reset bet selection
+                        betColor = '';
+                        document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+                        document.getElementById('currentBet').textContent = '';
+
+                        startTimer();
+                    })
+                    .catch(err => {
+                        console.error("Error fetching result:", err);
+                        document.getElementById('resultPopup').style.display = 'block';
+                        document.getElementById('resultPopup').textContent = "Error connecting to server!";
+                        setTimeout(() => document.getElementById('resultPopup').style.display = 'none', 3000);
+                    });
         }
 
         function updateHistory() {
             const historyList = document.getElementById('historyList');
             historyList.innerHTML = ''; // Clear current history
-            history.forAll(entry => {
+                history.forEach(entry => {
                 const item = document.createElement('div');
                 item.className = 'history-item';
                 item.innerHTML = `<span>${entry.time}</span><br>${entry.bet}<br>Result: ${entry.result}<br><span class="${entry.outcome.includes('Won') ? 'won' : 'lost'}">${entry.outcome}</span>`;

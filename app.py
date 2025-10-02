@@ -1,19 +1,21 @@
-import turtle as t
+from flask import Flask, jsonify
+import random
+import os
 
-t.speed(0)
-t.bgcolor("black")
-t.pencolor("orange")
-def square (x,y):
-    for j in range(4):
-        t.forward(x)
-        t.right(y)
-        for i in range(80):
-            square(170,90)
-            t.right(5)
-            t.circle(50)
-            t.right(50)
-            t.hideturtle()
-            t.done()
+app = Flask(__name__)
+
+@app.route("/get_result", methods=["GET"])
+def get_result():
+    # Weighted probabilities
+        colors = ["red", "green", "violet"]
+            weights = [0.45, 0.45, 0.10]  # red=45%, green=45%, violet=10%
+
+                result = random.choices(colors, weights=weights, k=1)[0]
+                    return jsonify({"result": result})
+
+                    if __name__ == "__main__":
+                        port = int(os.environ.get("PORT", 5000))  # Railway will assign PORT
+                            app.run(host="0.0.0.0", port=port)
 
 
 
