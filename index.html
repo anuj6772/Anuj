@@ -255,7 +255,7 @@
         function generateResult() {
                 roundCount++;
                 // Call your Python backend API
-                fetch("https://anuj-production.up.railway.app/get_result")
+                         fetch("http://anuj-production.up.railway.app/get_result")
                     .then(res => res.json())
                     .then(data => {
                         let result = data.result; // backend returns "red", "green" or "violet"
