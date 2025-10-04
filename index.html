@@ -289,7 +289,7 @@
         function generateResult() {
                 roundCount++;
                 // Call your Python backend API
-                         fetch("http://anuj-production.up.railway.app/get_result")
+                         fetch("https://anuj-lovat.vercel.app/get_result")
                     .then(res => res.json())
                     .then(data => {
                         let result = data.result; // backend returns "red", "green" or "violet"
