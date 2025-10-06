@@ -158,7 +158,22 @@
     </style>
 </head>
 <body>
-    <div class="container" id="gamePage">
+        <!-- Login/Signup Modal -->
+        <div id="authModal" class="hidden" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:2000;">
+            <div style="background:#222;padding:30px 20px;border-radius:10px;width:320px;text-align:center;position:relative;">
+                <h2 id="authTitle">Login / Signup</h2>
+                <input type="text" id="mobileInput" placeholder="Enter mobile number" maxlength="10" style="width:90%;padding:10px;margin:10px 0;border-radius:5px;border:none;">
+                <button onclick="sendOTP()" style="width:90%;padding:10px;background:#1e90ff;color:#fff;border:none;border-radius:5px;">Send OTP</button>
+                <div id="otpSection" class="hidden" style="margin-top:15px;">
+                    <input type="text" id="otpInput" placeholder="Enter OTP" maxlength="6" style="width:90%;padding:10px;margin-bottom:10px;border-radius:5px;border:none;">
+                    <button onclick="verifyOTP()" style="width:90%;padding:10px;background:#4dff4d;color:#222;border:none;border-radius:5px;">Verify OTP</button>
+                </div>
+                <button onclick="closeAuthModal()" style="position:absolute;top:10px;right:10px;background:#444;color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:1.2em;">&times;</button>
+                <div id="authMsg" style="color:#ff4d4d;margin-top:10px;"></div>
+            </div>
+        </div>
+
+        <div class="container" id="gamePage">
         <div class="header">
             <span id="menuIcon" style="cursor:pointer;font-size:1.5em;">&#9776;</span>
             <h2>Color Bet Challenge</h2>
@@ -368,9 +383,76 @@
             document.getElementById(pageId === 'gamePage' ? 'historyBtn' : 'homeBtn').classList.remove('active');
         }
 
-    // Start the game
-    showPage('gamePage');
-    startTimer();
+                // Auth modal logic
+                function openAuthModal() {
+                    document.getElementById('authModal').classList.remove('hidden');
+                    document.getElementById('otpSection').classList.add('hidden');
+                    document.getElementById('authMsg').textContent = '';
+                    document.getElementById('mobileInput').value = '';
+                    document.getElementById('otpInput').value = '';
+                }
+                function closeAuthModal() {
+                    document.getElementById('authModal').classList.add('hidden');
+                }
+                function sendOTP() {
+                    const mobile = document.getElementById('mobileInput').value;
+                    if (!/^\d{10}$/.test(mobile)) {
+                        document.getElementById('authMsg').textContent = 'Enter a valid 10-digit mobile number.';
+                        return;
+                    }
+                    document.getElementById('authMsg').textContent = 'Sending OTP...';
+                    // Call backend to send OTP via Fast2SMS
+                    fetch('/api/send_otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mobile })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('otpSection').classList.remove('hidden');
+                            document.getElementById('authMsg').textContent = 'OTP sent!';
+                        } else {
+                            document.getElementById('authMsg').textContent = data.message || 'Failed to send OTP.';
+                        }
+                    })
+                    .catch(() => {
+                        document.getElementById('authMsg').textContent = 'Error sending OTP.';
+                    });
+                }
+                function verifyOTP() {
+                    const mobile = document.getElementById('mobileInput').value;
+                    const otp = document.getElementById('otpInput').value;
+                    if (!otp) {
+                        document.getElementById('authMsg').textContent = 'Enter OTP.';
+                        return;
+                    }
+                    document.getElementById('authMsg').textContent = 'Verifying OTP...';
+                    // Call backend to verify OTP
+                    fetch('/api/verify_otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mobile, otp })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('authMsg').textContent = 'Login successful!';
+                            setTimeout(closeAuthModal, 1200);
+                        } else {
+                            document.getElementById('authMsg').textContent = data.message || 'Invalid OTP.';
+                        }
+                    })
+                    .catch(() => {
+                        document.getElementById('authMsg').textContent = 'Error verifying OTP.';
+                    });
+                }
+
+                // Example: openAuthModal() to show login/signup
+
+                // Start the game
+                showPage('gamePage');
+                startTimer();
     </script>
 </body>
 </html>
